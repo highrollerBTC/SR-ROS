@@ -133,7 +133,7 @@
     (try! (transfer-nft nft-asset-contract (get token-id listing) (as-contract tx-sender) maker))
     
     ;; Transfer exactly 1 rock (1e6 stacks-rock) to the maker (tx-sender)
-    (try! (transfer-ft rock-token-contract rock-height (as-contract tx-sender) tx-sender))
+    (try! (transfer-ft rock-token-contract (/ rock-height u100) (as-contract tx-sender) tx-sender))
     
     (ok listing-id)
   )
