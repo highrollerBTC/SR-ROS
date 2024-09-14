@@ -16,7 +16,7 @@
 (define-constant ERR_ASSET_CONTRACT_NOT_WHITELISTED (err u2007))
 (define-constant ERR_PAYMENT_CONTRACT_NOT_WHITELISTED (err u2008))
 
-(define-map listings
+(define-map staked
   uint
   {
     maker: principal,
@@ -76,7 +76,8 @@
   (contract-call? token-contract transfer amount sender recipient none)
 )
 
-(define-public (list-asset
+;; Stake NFTs and receive ROCK for your time staked
+(define-public (stakeIt
   (nft-asset-contract <nft-trait>)
   (nft-asset {
     hi: uint,
@@ -97,7 +98,7 @@
       tx-sender
       (as-contract tx-sender)
     ))
-    (map-set listings listing-id (merge
+    (map-set staked listing-id (merge
       { maker: tx-sender, hi: block-height, nft-asset-contract: (contract-of nft-asset-contract) }
       nft-asset
     ))
@@ -108,14 +109,14 @@
   )
 )
 
-(define-read-only (get-listing (listing-id uint))
-  (map-get? listings listing-id)
+(define-read-only (get-stake (listing-id uint))
+  (map-get? staked listing-id)
 )
 
-;; Modified cancel-listing function to send exactly 1 rock (1e6 stacks-rock)
-(define-public (cancel-listing (listing-id uint) (nft-asset-contract <nft-trait>) (rock-token-contract <ft-trait>))
+;; Unstake NFTs and receive ROCK for your time
+(define-public (unstake (listing-id uint) (nft-asset-contract <nft-trait>) (rock-token-contract <ft-trait>))
   (let (
-    (listing (unwrap! (map-get? listings listing-id) ERR_UNKNOWN_LISTING))
+    (listing (unwrap! (map-get? staked listing-id) ERR_UNKNOWN_LISTING))
     (maker (get maker listing))
     (height (get hi listing))
     (rock-height (- block-height height))
@@ -128,7 +129,7 @@
     ) ERR_NFT_ASSET_MISMATCH)
     
     ;; Delete the listing and transfer the NFT back to the maker
-    (map-delete listings listing-id)
+    (map-delete staked listing-id)
     (map-set totalStaked (as-contract tx-sender) (- (get-count (as-contract tx-sender)) u1))
     (try! (transfer-nft nft-asset-contract (get token-id listing) (as-contract tx-sender) maker))
     
