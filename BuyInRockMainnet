@@ -1,37 +1,27 @@
-(use-trait v-ft-trait 'SP2AKWJYC7BNY18W1XXKPGP0YVEK63QJG4793Z2D4.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait v-share-fee-to-trait 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.univ2-share-fee-to-trait.share-fee-to-trait)
-(use-trait a-ft-trait 'SP102V8P0F7JX67ARQ77WEA3D3CFB5XW39REDT0AM.trait-sip-010.sip-010-trait)
+(use-trait ft-trait 'SP2AKWJYC7BNY18W1XXKPGP0YVEK63QJG4793Z2D4.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait share-fee-to-trait 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.univ2-share-fee-to-trait.share-fee-to-trait)
 
-(define-constant wstx_CONTRACT 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.wstx)
+(define-constant token0 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.wstx)
 (define-constant ERR_SWAP_FAILED (err u1003))
-(define-constant ROCK_CONTRACT 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock)
+(define-constant token1 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock)
 (define-constant NFT_CONTRACT 'SP318K3PRSDM42P68CAK4WS8MB1TRXA1K00TMEF8B.hard-as-rock)
-(define-constant WQSTXv3 'SP102V8P0F7JX67ARQ77WEA3D3CFB5XW39REDT0AM.token-wlqstx-v3)
-(define-constant WSTXv2 'SP102V8P0F7JX67ARQ77WEA3D3CFB5XW39REDT0AM.token-wstx-v2)
+(define-constant token-in 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock)
+(define-constant token-out 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.wstx)
 
 (define-data-var last-swap-height uint u0)
 
 (define-public (hot-swap
-    (amount uint) 
-    (min-received uint)
-    (swaps-reversed bool)
-    (v-tokens (tuple (a <v-ft-trait>) (b <v-ft-trait>)))
-    (v-share-fee-to <v-share-fee-to-trait>)
-    (a-tokens (tuple (a <a-ft-trait>) (b <a-ft-trait>)))
-    (a-factors (tuple (a uint)))
+    (id uint) (token0 <ft-trait>) (token1 <ft-trait>) (token-in <ft-trait>) (token-out <ft-trait>) (share-fee-to <share-fee-to-trait>) (amt-in uint) (amt-out-min uint)
 )
   (begin
     ;; Call the swap function in the target contract
-    (let ((swap-result (contract-call? 
-                         'SPQC38PW542EQJ5M11CR25P7BS1CA6QT4TBXGB3M.router-velar-alex-v-1-2 
-                         swap
-                         amount
-                         u1
-                         swaps-reversed
-                         (tuple (a wstx_CONTRACT) (b ROCK_CONTRACT))
-                         v-share-fee-to
-                         (tuple (a WQSTXv3) (b WSTXv2))
-                         a-factors)))
+    (let ((swap-result (try! (contract-call?
+          'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.univ2-router swap-exact-tokens-for-tokens
+          u18
+          token0 token1
+          token-in token-out
+          share-fee-to
+          amt-in u1))))
       ;; Check if swap was successful
       (match swap-result
         ok
@@ -43,4 +33,8 @@
       )
     )
   )
+)
+
+(define-public (burn (amount uint))
+  (contract-call? ROCK_Contract transfer amount (as-contract tx-sender) BURN_ADDRESS none)
 )
