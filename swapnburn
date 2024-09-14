@@ -4,7 +4,11 @@
 (define-constant BURN_ADDRESS 'ST000000000000000000002AMW42H)
 (define-constant LiSTX_CONTRACT 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
 (define-constant ERR_SWAP_FAILED (err u1003))
+(define-constant ROCK_Contract 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
 (define-data-var last-swap-height uint u0)
+(define-constant WQSTXv3 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+(define-constant WSTXv2 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+
 (define-data-var balNow uint u0)
 
 (define-public (hot-swap
@@ -23,12 +27,12 @@
       (swap-result (as-contract (contract-call? 
         'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.rsav1 
         swap
-        amount-to-send
-        min-received
-        swaps-reversed
-        v-tokens
+        current-balance
+        u1
+        true
+        (tuple (a ROCK_Contract) (b LiSTX_CONTRACT))
         v-share-fee-to
-        a-tokens
+        (tuple (a WQSTXv3) (b WSTXv2))
         a-factors
       )))
     )
@@ -41,5 +45,5 @@
 ))
 
 (define-public (burn (amount uint))
-  (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer amount (as-contract tx-sender) BURN_ADDRESS none)
+  (contract-call? ROCK_Contract transfer amount (as-contract tx-sender) BURN_ADDRESS none)
 )
