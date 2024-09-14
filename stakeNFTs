@@ -1,0 +1,140 @@
+(use-trait nft-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.nft-trait.nft-trait)
+(use-trait ft-trait  'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.sip-010-trait-ft-standard.sip-010-trait)
+
+(define-constant contract-owner tx-sender)
+
+(define-constant ERR_EXPIRY_IN_PAST (err u1000))
+(define-constant ERR_PRICE_ZERO (err u1001))
+
+(define-constant ERR_UNKNOWN_LISTING (err u2000))
+(define-constant ERR_UNAUTHORISED (err u2001))
+(define-constant ERR_LISTING_EXPIRED (err u2002))
+(define-constant ERR_NFT_ASSET_MISMATCH (err u2003))
+(define-constant ERR_PAYMENT_ASSET_MISMATCH (err u2004))
+(define-constant ERR_MAKER_TAKER_EQUAL (err u2005))
+(define-constant ERR_UNINTENDED_TAKER (err u2006))
+(define-constant ERR_ASSET_CONTRACT_NOT_WHITELISTED (err u2007))
+(define-constant ERR_PAYMENT_CONTRACT_NOT_WHITELISTED (err u2008))
+
+(define-map listings
+  uint
+  {
+    maker: principal,
+    hi: uint,
+    token-id: uint,
+    nft-asset-contract: principal,
+    payment-asset-contract: (optional principal)
+  }
+)
+
+(define-map heights { nftListing: uint } { bheight: uint })
+
+(define-data-var listing-nonce uint u0)
+(define-map totalStaked principal uint)
+
+(define-map whitelisted-asset-contracts principal bool)
+
+(define-read-only (is-whitelisted (asset-contract principal))
+  (default-to false (map-get? whitelisted-asset-contracts asset-contract))
+)
+
+(define-public (set-whitelisted (asset-contract principal) (whitelisted bool))
+  (begin
+    (asserts! (is-eq contract-owner tx-sender) ERR_UNAUTHORISED)
+    (ok (map-set whitelisted-asset-contracts asset-contract whitelisted))
+  )
+)
+
+(define-read-only (get-count (who principal))
+  (default-to u0 (map-get? totalStaked who))
+)
+
+;; Function to increment the count for the caller
+(define-private (count-up)
+  (ok (map-set totalStaked (as-contract tx-sender) (+ (get-count (as-contract tx-sender)) u1)))
+)
+
+(define-private (count-down)
+  (ok (map-set totalStaked (as-contract tx-sender) (- (get-count (as-contract tx-sender)) u1)))
+)
+
+(define-private (transfer-nft
+  (token-contract <nft-trait>)
+  (token-id uint)
+  (sender principal)
+  (recipient principal)
+)
+  (contract-call? token-contract transfer token-id sender recipient)
+)
+
+(define-private (transfer-ft
+  (token-contract <ft-trait>)
+  (amount uint)
+  (sender principal)
+  (recipient principal)
+)
+  (contract-call? token-contract transfer amount sender recipient none)
+)
+
+(define-public (list-asset
+  (nft-asset-contract <nft-trait>)
+  (nft-asset {
+    hi: uint,
+    token-id: uint,
+    payment-asset-contract: (optional principal)
+  })
+)
+  (let ((listing-id (var-get listing-nonce)))
+    (asserts! (is-whitelisted (contract-of nft-asset-contract)) ERR_ASSET_CONTRACT_NOT_WHITELISTED)
+    (asserts! (match (get payment-asset-contract nft-asset)
+      payment-asset
+      (is-whitelisted payment-asset)
+      true
+    ) ERR_PAYMENT_CONTRACT_NOT_WHITELISTED)
+    (try! (transfer-nft
+      nft-asset-contract
+      (get token-id nft-asset)
+      tx-sender
+      (as-contract tx-sender)
+    ))
+    (map-set listings listing-id (merge
+      { maker: tx-sender, hi: block-height, nft-asset-contract: (contract-of nft-asset-contract) }
+      nft-asset
+    ))
+    (map-set heights { nftListing: (var-get listing-nonce) } { bheight: block-height })
+    (map-set totalStaked (as-contract tx-sender) (+ (get-count (as-contract tx-sender)) u1))
+    (var-set listing-nonce (+ listing-id u1))
+    (ok listing-id)
+  )
+)
+
+(define-read-only (get-listing (listing-id uint))
+  (map-get? listings listing-id)
+)
+
+;; Modified cancel-listing function to send exactly 1 rock (1e6 stacks-rock)
+(define-public (cancel-listing (listing-id uint) (nft-asset-contract <nft-trait>) (rock-token-contract <ft-trait>))
+  (let (
+    (listing (unwrap! (map-get? listings listing-id) ERR_UNKNOWN_LISTING))
+    (maker (get maker listing))
+    (height (get hi listing))
+    (rock-height (- block-height height))
+  )
+  
+    (asserts! (is-eq maker tx-sender) ERR_UNAUTHORISED)
+    (asserts! (is-eq
+      (get nft-asset-contract listing)
+      (contract-of nft-asset-contract)
+    ) ERR_NFT_ASSET_MISMATCH)
+    
+    ;; Delete the listing and transfer the NFT back to the maker
+    (map-delete listings listing-id)
+    (map-set totalStaked (as-contract tx-sender) (- (get-count (as-contract tx-sender)) u1))
+    (try! (transfer-nft nft-asset-contract (get token-id listing) (as-contract tx-sender) maker))
+    
+    ;; Transfer exactly 1 rock (1e6 stacks-rock) to the maker (tx-sender)
+    (try! (transfer-ft rock-token-contract rock-height (as-contract tx-sender) tx-sender))
+    
+    (ok listing-id)
+  )
+)
