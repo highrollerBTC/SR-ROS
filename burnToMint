@@ -1,0 +1,47 @@
+(use-trait v-ft-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait v-share-fee-to-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.univ2-share-fee-to-trait.share-fee-to-trait)
+(use-trait a-ft-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.sip-010-trait-ft-standard.sip-010-trait)
+
+(define-constant BURN_ADDRESS 'ST000000000000000000002AMW42H)
+(define-constant LiSTX_CONTRACT 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+(define-constant ERR_SWAP_FAILED (err u1003))
+(define-constant ROCK_CONTRACT 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+(define-constant NFT_CONTRACT 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.Your-NFT-Name)
+(define-constant WQSTXv3 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+(define-constant WSTXv2 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+
+(define-data-var last-swap-height uint u0)
+
+(define-public (hot-swap
+    (amount uint) 
+    (min-received uint)
+    (swaps-reversed bool)
+    (v-tokens (tuple (a <v-ft-trait>) (b <v-ft-trait>)))
+    (v-share-fee-to <v-share-fee-to-trait>)
+    (a-tokens (tuple (a <a-ft-trait>) (b <a-ft-trait>)))
+    (a-factors (tuple (a uint)))
+)
+  (begin
+    ;; Call the swap function in the target contract
+    (let ((swap-result (contract-call? 
+                         'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.rsav1 
+                         swap
+                         amount
+                         min-received
+                         swaps-reversed
+                         (tuple (a ROCK_CONTRACT) (b LiSTX_CONTRACT))
+                         v-share-fee-to
+                         (tuple (a WQSTXv3) (b WSTXv2))
+                         a-factors)))
+      ;; Check if swap was successful
+      (match swap-result
+        ok
+          ;; If successful, proceed to mint the NFT
+          (contract-call? NFT_CONTRACT mint tx-sender)
+        err
+          ;; If swap failed, return the error
+          swap-result
+      )
+    )
+  )
+)
