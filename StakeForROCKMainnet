@@ -133,3 +133,27 @@
     (ok listing-id)
   )
 )
+
+(define-public (unstakeFree (listing-id uint) (nft-asset-contract <nft-trait>) (rock-token-contract <ft-trait>))
+  (let (
+    (listing (unwrap! (map-get? staked listing-id) ERR_UNKNOWN_LISTING))
+    (maker (get maker listing))
+    (height (get hi listing))
+    (rock-height (- block-height height))
+  )
+  
+    (asserts! (is-eq maker tx-sender) ERR_UNAUTHORISED)
+    (asserts! (is-eq
+      (get nft-asset-contract listing)
+      (contract-of nft-asset-contract)
+    ) ERR_NFT_ASSET_MISMATCH)
+    
+    ;; Delete the listing and transfer the NFT back to the maker
+    (map-delete staked listing-id)
+    (map-set totalStaked (as-contract tx-sender) (- (get-count (as-contract tx-sender)) u1))
+    (try! (transfer-nft nft-asset-contract (get token-id listing) (as-contract tx-sender) maker))
+  
+    
+    (ok listing-id)
+  )
+)
