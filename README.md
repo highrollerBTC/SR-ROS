@@ -1,5 +1,7 @@
 Donations welcome at Highroller.btc.
+
 For the community. Open source. 
+
 Perpetual Demand + Rock DeFi Ecosystem.
 
 **ROCK DeFi Ecosystem on Stacks – Open Source Contracts for the Community**
