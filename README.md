@@ -1,4 +1,9 @@
+                                                                                                                                                                        Donations welcome at Highroller.btc.
+                                                                                                                                                                        For the community. Open source.
+                                                                                                                                                                        Perpetual Demand + Rock DeFi Ecosystem.
+
 # ROCK DeFi Ecosystem on Stacks – Open Source Contracts for the Community
+
 
 Welcome to the ROCK Ecosystem! This collection of smart contracts is designed to bring perpetual demand and a full DeFi ecosystem to any token on the Stacks blockchain. Built with a community-first mindset that incorporates everything good about Bitcoin and Stacks, these contracts create sustainable demand, circular value, and open up decentralized financial operations for your token. With a bit of configuration, they can be adapted to serve a variety of use cases. Let's dive into the contracts and the ecosystem that will power the next phase of #BitcoinDeFi.
 
