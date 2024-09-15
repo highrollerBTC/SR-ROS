@@ -41,6 +41,10 @@ Welcome to the ROCK Ecosystem! This collection of smart contracts is designed to
    - **Description:** A temporary lending protocol based on Hiro's sample code, which provides a foundation for building out decentralized finance features. This contract can be expanded for DeFi use cases specific to your community's memecoin.
    - Currently more of a placeholder, but can be expanded into a full lending solution for community tokens.
 
+### 6. **one-small-step**
+   - **Description:** This contract initiates and begins your DeFi ecosystem. It transfers some ROCK, LiSTX and whitelists Hard as ROCK in the staking platform.
+
+
 ---
 
 ## 🚀 How it Works: The ROCK Ecosystem Flow
