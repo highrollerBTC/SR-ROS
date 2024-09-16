@@ -30,14 +30,14 @@ Welcome to the ROCK Ecosystem! This collection of smart contracts is designed to
    - **Description:** SendLiSA is a self-monitored and maintained vault for LiSTX. It acts as a one-way funnel into ROCK, periodically allowing a small percentage of LiSTX to be swapped into ROCK. This drives perpetual demand by funneling these funds into further parts of the ecosystem like SwapForStakeNBurn.
    - **Use Cases:** This contract can be used to maintain perpetual demand for your token by consistently converting assets into ROCK (or another token of your choice) for further use within the ecosystem.
 
-      - Testnet working.
+   - Testnet working.
    - Mainnet Launched - Testing
 
 ### 4. **SwapForStakeNBurnMainnet & SwapForStakeNBurnTestnet**
    - **Description:** A contract that allows anyone to swap LiSTX into ROCK, then either burns the ROCK or sends it to the StakeForROCK contract. This serves as a decentralized, perpetual demand mechanism to keep ROCK scarce and valuable.
    - **Use Cases:** Ideal for community tokens to create ongoing buy pressure, reduce circulating supply, or drive staking pools.
 
-      - Testnet working.
+   - Testnet working.
    - Mainnet Launched - Testing
 
 ### 5. **Lending**
