@@ -35,23 +35,25 @@
     (ok amount) ;; Return the updated amount
   )
 )
+
 (define-public (sendIt (isSure bool))
   (begin
     ;; Get the current block height and update `curHeight`
     (var-set curHeight block-height)
-
+    
     ;; Calculate the blocks passed since the last swap
     (let (
       (calcHeight (- (var-get curHeight) (var-get last-swap-height)))
-      (current-balance (unwrap-panic (contract-call? LiSTX_CONTRACT get-balance (as-contract tx-sender))))
-      (amount-to-send (/ current-balance u650))
+      ;; Use get-share to get the number of shares the contract owns
+      (current-shares (unwrap-panic (contract-call? LiSTX_CONTRACT get-share (as-contract tx-sender))))
+      (amount-to-send (/ current-shares u650)) ;; Adjust this logic as necessary
       (swap-result (contract-call? LiSTX_CONTRACT transfer amount-to-send (as-contract tx-sender) toSwapper none))
     )
     (begin
       ;; Update `blockPas` and `pasit`
       (var-set blockPas calcHeight)
       (var-set pasit (>= (var-get blockPas) u2016))
-
+      
       ;; Check if `pasit` is true, if not, exit early
       (if (is-eq (var-get pasit) false)
         (err ERR_TOO_SOON)
