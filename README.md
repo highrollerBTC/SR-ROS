@@ -1,9 +1,14 @@
-Donations welcome at Highroller.btc.
-For the community. Open source. 
-Perpetual Demand + Rock DeFi Ecosystem.
-Current Phase: Contracts designed, built and launched. Currently testing.
-Release date for the ROCK community: TBD. Currently finalizing tests, and i'll be updating the code on Github accordingly.
-If you follow the GitHub or Twitter you'll be informed on when ROCK's apps are ready for use!
+**Donations welcome at Highroller.btc.**
+
+**For the community. Open source.** 
+
+**Perpetual Demand + Rock DeFi Ecosystem.**
+
+**Current Phase: Contracts designed, built and launchable (mainnet testing/dev phase). Currently testing.**
+
+_**Release date for the ROCK community: TBD. Currently finalizing tests, and i'll be updating the code on Github accordingly.**_
+
+_**If you follow the GitHub or Twitter you'll be informed on when ROCK's apps are ready for use!**_
 
 
 See Community Guides for more on how to use contract for yourself.
