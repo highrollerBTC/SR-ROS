@@ -9,6 +9,7 @@
 (define-constant ERR_PAYMENT_CONTRACT_NOT_WHITELISTED (err u2008))
 (define-constant ERR_NFT_ASSET_MISMATCH (err u2003))
 
+;; Updated listings map to include `staked-at`
 (define-map listings
   uint
   {
@@ -16,16 +17,22 @@
     hi: uint,
     token-id: uint,
     nft-asset-contract: principal,
-    payment-asset-contract: (optional principal)
+    payment-asset-contract: (optional principal),
+    staked-at: uint
   }
 )
 
 (define-data-var listing-nonce uint u0)
 
 (define-map whitelisted-asset-contracts principal bool)
+(define-map nft-listing-counts principal uint)
 
 (define-read-only (is-whitelisted (asset-contract principal))
   (default-to false (map-get? whitelisted-asset-contracts asset-contract))
+)
+
+(define-read-only (get-listing-count (nft-asset-contract principal))
+  (default-to u0 (map-get? nft-listing-counts nft-asset-contract))
 )
 
 (define-public (set-whitelisted (asset-contract principal) (whitelisted bool))
@@ -78,10 +85,20 @@
       tx-sender
       (as-contract tx-sender)
     ))
+    ;; Add `staked-at` to the `listings` map when creating the new listing
     (map-set listings listing-id (merge
-      { maker: tx-sender, hi: block-height, nft-asset-contract: (contract-of nft-asset-contract) }
+      {
+        maker: tx-sender,
+        hi: block-height,
+        nft-asset-contract: (contract-of nft-asset-contract),
+        staked-at: block-height ;; Set the original staking block height
+      }
       nft-asset
     ))
+    ;; Increment the listing count for this NFT contract
+    (let ((current-count (get-listing-count (contract-of nft-asset-contract))))
+      (map-set nft-listing-counts (contract-of nft-asset-contract) (+ current-count u1))
+    )
     (var-set listing-nonce (+ listing-id u1))
     (print {listing-id: listing-id, token-id: (get token-id nft-asset), block-height: block-height, maker: tx-sender})
     (ok listing-id)
@@ -95,21 +112,21 @@
     (token-id (get token-id listing))
   )
     (asserts! (is-eq maker tx-sender) ERR_UNAUTHORISED)
-    (asserts! (is-eq
-      (get nft-asset-contract listing)
-      (contract-of nft-asset-contract)
-    ) ERR_NFT_ASSET_MISMATCH)
+    
     
     ;; Delete the listing and transfer the NFT back to the maker
     (map-delete listings listing-id)
+    ;; Decrement the listing count for this NFT contract
+    (let ((current-count (get-listing-count (contract-of nft-asset-contract))))
+      (map-set nft-listing-counts (get nft-asset-contract listing) (if (> current-count u0) (- current-count u1) u0))
+    )
     ;; Perform the NFT transfer in the `as-contract` context
-    (try! (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.Your-NFT-Name transfer token-id tx-sender maker)))
+    (try! (as-contract (contract-call? (get nft-asset-contract listing) transfer token-id tx-sender maker)))
     
     (print {listing-id: listing-id, token-id: token-id, maker: maker, block-height: block-height})
     (ok listing-id)
   )
 )
-
 
 (define-public (claim (listing-id uint) (rock-token-contract <ft-trait>))
   (let (
@@ -121,7 +138,6 @@
     (asserts! (is-eq maker tx-sender) ERR_UNAUTHORISED)
     
     ;; Transfer the reward tokens to the maker (tx-sender)
-
     (try! (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer (* rock-height u10000) tx-sender maker none)))
     
     ;; Reset the `hi` of the listing to the current block-height
