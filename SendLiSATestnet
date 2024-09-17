@@ -39,9 +39,9 @@
     (let (
       (maker tx-sender)
       (calcHeight (- block-height (var-get last-swap-height)))
-      (current-balance (unwrap-panic (as-contract (contract-call? LiSTX_CONTRACT get-balance tx-sender))))
+      (current-balance (unwrap-panic (contract-call? LiSTX_CONTRACT get-balance tx-sender)))
       (amount-to-send (/ current-balance u650))
-      (swap-result (as-contract (contract-call? LiSTX_CONTRACT transfer amount-to-send  tx-sender toSwapper none)))
+      (swap-result (try! (as-contract (contract-call? LiSTX_CONTRACT transfer amount-to-send  tx-sender toSwapper none))))
     )
     (begin
       ;; Update `blockPas` and `pasit`
