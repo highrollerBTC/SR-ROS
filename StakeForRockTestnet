@@ -53,6 +53,10 @@
   (contract-call? token-contract transfer amount sender recipient none)
 )
 
+(define-read-only (get-listing (listing-id uint))
+  (map-get? listings listing-id)
+)
+
 (define-public (stake
   (nft-asset-contract <nft-trait>)
   (nft-asset {
