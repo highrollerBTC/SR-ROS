@@ -1,8 +1,6 @@
-(use-trait v-ft-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait v-share-fee-to-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.univ2-share-fee-to-trait.share-fee-to-trait)
-(use-trait a-ft-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.sip-010-trait-ft-standard.sip-010-trait)
-
 (define-constant BURN_ADDRESS 'ST000000000000000000002AMW42H)
+(define-constant toSwapper 'ST000000000000000000002AMW42H)
+
 (define-constant LiSTX_CONTRACT 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
 (define-constant ERR_SWAP_FAILED (err u1003))
 (define-constant ERR_TOO_SOON (err u1004))
@@ -36,14 +34,14 @@
 (define-public (sendIt (isSure bool))
   (begin
     ;; Get the current block height and update `curHeight`
-    (var-set curHeight block-height)
 
     ;; Calculate the blocks passed since the last swap
     (let (
-      (calcHeight (- (var-get curHeight) (var-get last-swap-height)))
-      (current-balance (unwrap-panic (contract-call? LiSTX_CONTRACT get-balance (as-contract tx-sender))))
+      (maker tx-sender)
+      (calcHeight (- block-height (var-get last-swap-height)))
+      (current-balance (unwrap-panic (as-contract (contract-call? LiSTX_CONTRACT get-balance tx-sender))))
       (amount-to-send (/ current-balance u650))
-      (swap-result (contract-call? LiSTX_CONTRACT transfer amount-to-send (as-contract tx-sender) BURN_ADDRESS none))
+      (swap-result (as-contract (contract-call? LiSTX_CONTRACT transfer amount-to-send  tx-sender toSwapper none)))
     )
     (begin
       ;; Update `blockPas` and `pasit`
