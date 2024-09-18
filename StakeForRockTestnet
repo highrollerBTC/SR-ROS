@@ -112,21 +112,25 @@
     (token-id (get token-id listing))
   )
     (asserts! (is-eq maker tx-sender) ERR_UNAUTHORISED)
-    
+    (asserts! (is-eq
+      (get nft-asset-contract listing)
+      (contract-of nft-asset-contract)
+    ) ERR_NFT_ASSET_MISMATCH)
     
     ;; Delete the listing and transfer the NFT back to the maker
     (map-delete listings listing-id)
     ;; Decrement the listing count for this NFT contract
     (let ((current-count (get-listing-count (contract-of nft-asset-contract))))
-      (map-set nft-listing-counts (get nft-asset-contract listing) (if (> current-count u0) (- current-count u1) u0))
+      (map-set nft-listing-counts (contract-of nft-asset-contract) (if (> current-count u0) (- current-count u1) u0))
     )
     ;; Perform the NFT transfer in the `as-contract` context
-    (try! (as-contract (contract-call? (get nft-asset-contract listing) transfer token-id tx-sender maker)))
+    (try! (as-contract (contract-call? nft-asset-contract transfer token-id (as-contract tx-sender) maker)))
     
     (print {listing-id: listing-id, token-id: token-id, maker: maker, block-height: block-height})
     (ok listing-id)
   )
 )
+
 
 (define-public (claim (listing-id uint) (rock-token-contract <ft-trait>))
   (let (
