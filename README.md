@@ -4,14 +4,12 @@
 
 **Perpetual Demand + Rock DeFi Ecosystem.**
 
-**Current Phase: Contracts designed, built and launchable (mainnet testing/dev phase). Currently testing.**
-
-_**Release date for the ROCK community: TBD. Currently finalizing tests, and i'll be updating the code on Github accordingly.**_
+**Current Phase: Mainnet Launch Incoming**
 
 _**If you follow the GitHub or Twitter you'll be informed on when ROCK's apps are ready for use!**_
 
 
-See Community Guides for more on how to use contract for yourself.
+See Community Guides for more on how to use contract for yourself. (Coming Soon)
 Remember to modify your contracts and test them on testnet first! It's important you test, test and test some more.
 AKA Test on testnet. Test on mainnet at your own risk. Currently working around LiSTX and fixing minor bugs, but mainnet is coming.
 
@@ -27,36 +25,25 @@ Welcome to the ROCK Ecosystem! This collection of smart contracts is designed to
    - **Description:** Enables users to buy NFTs in the token of their choice, especially ROCK, your community’s memecoin. This contract allows minting in ROCK by swapping it for STX in the background and then minting the NFT. No more minting in just STX from Gamma; use your token to power your NFT minting!
    - **Use Cases:** Useful for any NFT collection that wishes to offer their community the ability to mint using a specific token.
 
-   - Testnet working
-   - Still in progress.
+   - Coming Soon
 
-### 2. **StakeForROCKMainnet & StakeForRockTestnet**
-   - **Description:** These contracts allow you to stake your NFTs and earn rewards in ROCK. The longer you stake, the more rewards you accumulate. It's a simple yet powerful staking platform that can be extended to future collaborations with other communities.
+### 2. **StakeForROCK**
+   - **Description:** Stake your NFTs and earn rewards in ROCK. The longer you stake, the more rewards you accumulate. It's a simple yet powerful staking platform that can be extended to future collaborations with other communities.
    - **Use Cases:** For communities wishing to offer a staking mechanism for their NFTs that produces linear rewards over time.
    
-   - Testnet working.
-   - Mainnet Launched - Testing
+   - Mainnet Launch incoming.
 
-### 3. **SendLiSAMainnet & SendLiSATestnet**
-   - **Description:** SendLiSA is a self-monitored and maintained vault for LiSTX. It acts as a one-way funnel into ROCK, periodically allowing a small percentage of LiSTX to be swapped into ROCK. This drives perpetual demand by funneling these funds into further parts of the ecosystem like SwapForStakeNBurn.
+### 3. **ImmortalHardv3**
+   - **Description:** ImmortalHardv3 is a self-monitored and maintained vault for LiSTX. Effectively, you can now have perpetual demand on Stacks using LiSTX, Bitflow and ROCK.
+   - It acts as a one-way funnel into ROCK, periodically allowing a small percentage of LiSTX to be swapped into ROCK. This drives perpetual demand by funneling these funds into further parts of the ecosystem like SwapForStakeNBurn.
    - **Use Cases:** This contract can be used to maintain perpetual demand for your token by consistently converting assets into ROCK (or another token of your choice) for further use within the ecosystem.
 
-   - Testnet working.
-   - Mainnet Launched - Testing
+   - Mainnet Launch incoming.
 
-### 4. **SwapForStakeNBurnMainnet & SwapForStakeNBurnTestnet**
-   - **Description:** A contract that allows anyone to swap LiSTX into ROCK, then either burns the ROCK or sends it to the StakeForROCK contract. This serves as a decentralized, perpetual demand mechanism to keep ROCK scarce and valuable.
-   - **Use Cases:** Ideal for community tokens to create ongoing buy pressure, reduce circulating supply, or drive staking pools.
-
-   - Testnet working.
-   - Mainnet Launched - Testing
 
 ### 5. **Lending**
    - **Description:** A temporary lending protocol based on Hiro's sample code, which provides a foundation for building out decentralized finance features. This contract can be expanded for DeFi use cases specific to your community's memecoin.
    - Currently more of a placeholder, but can be expanded into a full lending solution for community tokens.
-
-### 6. **one-small-step**
-   - **Description:** This contract initiates and begins your DeFi ecosystem. It transfers some ROCK, LiSTX and whitelists Hard as ROCK in the staking platform.
 
 
 ---
@@ -65,9 +52,7 @@ Welcome to the ROCK Ecosystem! This collection of smart contracts is designed to
 
 1. **Mint in ROCK:** BuyInROCK allows your community to mint NFTs using ROCK or any other memecoin. This app works by swapping ROCK for STX in the background to facilitate the minting process.
 
-2. **Perpetual Demand via SendLiSA:** SendLiSA periodically swaps a percentage of LiSTX into ROCK. This ensures continuous demand for ROCK and fuels the entire ecosystem. One way funnel means this LiSTX can only be used to buy more ROCK. LET'S GO BABY.
-
-3. **Swap & Burn:** The SwapForStakeNBurn contract allows anyone to convert the swapped LiSTX into ROCK. This ROCK can either be burned (reducing supply) or sent to the StakeForROCK contract.
+2. **Perpetual Demand/Perpetual Buying Pressure:** ImmortalHardv3 periodically swaps a percentage of LiSTX into ROCK. This ensures continuous demand for ROCK and fuels the entire ecosystem. One way funnel means this LiSTX can only be used to buy more ROCK. LET'S GO BABY.
 
 4. **Staking:** With StakeForROCK, users can stake their ROCK NFTs and earn rewards. This staking platform can be extended for future collaborations and projects, offering even more utility to the ROCK ecosystem.
 
@@ -87,6 +72,7 @@ These contracts were built with the community in mind. By launching this as open
 - **Perpetual Demand:** The contracts create a constant buy pressure on your token, driving its value up over time.
 - **Circular Ecosystem:** Allows communities to create a self-sustaining DeFi ecosystem including staking, burning, swapping, and more.
 - **Low Barriers for Non-Devs:** These contracts are ready to deploy and use, requiring minimal configuration to fit your specific use case.
+- **Full DeFi Ecosystem:** Your community needs a full DeFi ecosystem. With the Out of the Box Staking for your NFTs, along with Perpetual Demand, your community can finally have something to rally around! 
 
 ### Donations & Community Support
 All these contracts are released to help the community, no fees, no private alpha. If you find these contracts valuable, consider donating to Highroller.btc. Your support will help maintain this ecosystem and fuel future development for the benefit of the entire community.
