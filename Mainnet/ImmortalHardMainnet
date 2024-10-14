@@ -82,30 +82,27 @@
   )
 )
 
-
 (define-public (send-to-burn (amount uint))
-  (let (
-    (maker tx-sender)
-  )
+  (begin
     (try! (as-contract (contract-call? 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock transfer amount tx-sender 'SP000000000000000000002Q6VF78 none)))
     (ok amount)
   )
 )
 
+;; Mainnet `return` function added
 (define-public (return (amount uint))
-  (let (
-    (maker tx-sender)
-  )
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
     (try! (as-contract (contract-call? 'SM26NBC8SFHNW4P1Y4DFH27974P56WN86C92HPEHH.token-lqstx transfer amount tx-sender (var-get contract-owner) none)))
     (ok amount)
   )
 )
 
+;; Mainnet `send-to-stake` function with testnet constants
 (define-public (send-to-stake (amount uint))
-  (let (
-    (maker tx-sender)
-  )
+  (begin
     (try! (as-contract (contract-call? 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock transfer amount tx-sender (var-get stakingContract) none)))
     (ok amount)
   )
 )
+
