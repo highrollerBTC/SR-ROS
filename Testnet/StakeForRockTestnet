@@ -36,9 +36,10 @@
   (default-to u0 (map-get? nft-listing-counts nft-asset-contract))
 )
 
+;;Using contract-caller S/O Ghislo
 (define-public (set-whitelisted (asset-contract principal) (whitelisted bool))
   (begin
-    (asserts! (is-eq contract-owner tx-sender) ERR_UNAUTHORISED)
+    (asserts! (is-eq contract-owner contract-caller) ERR_UNAUTHORISED)
     (ok (map-set whitelisted-asset-contracts asset-contract whitelisted))
   )
 )
