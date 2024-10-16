@@ -18,5 +18,7 @@ SP2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH6RCSQ3X.ImmortalHard-v3
 ------ Unofficial updates to be pushed --------
 
 Cleaned up code.
+
 Fix Return for contract-owner
+
 Use of contract-caller for hardened functions
