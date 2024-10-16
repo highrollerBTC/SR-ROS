@@ -21,7 +21,6 @@
 (define-data-var interval uint SWAP_INTERVAL)
 (define-data-var balNow uint u0)
 (define-data-var last-swap-height uint u0)
-(define-data-var mult uint u2)
 
 ;; New functions from mainnet code
 ;; Using contract-caller (S/O Ghislo)
@@ -34,13 +33,6 @@
   )
 )
 
-(define-public (setMult (new uint))
-  (begin
-    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set staking contract
-    (var-set mult new)
-    (ok new)
-  )
-)
 
 (define-public (setInterval (inter uint))
   (begin
