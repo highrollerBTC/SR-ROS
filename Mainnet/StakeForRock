@@ -40,7 +40,7 @@
 
 (define-public (set-whitelisted (asset-contract principal) (whitelisted bool))
   (begin
-    (asserts! (is-eq (var-get contract-owner) tx-sender) ERR_UNAUTHORISED)
+    (asserts! (is-eq (var-get contract-owner) contract-caller) ERR_UNAUTHORISED)
     (ok (map-set whitelisted-asset-contracts asset-contract whitelisted))
   )
 )
