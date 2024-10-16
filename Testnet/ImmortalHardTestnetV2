@@ -24,10 +24,11 @@
 (define-data-var mult uint u2)
 
 ;; New functions from mainnet code
+;; Using contract-caller (S/O Ghislo)
 
 (define-public (setStaking (address principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set staking contract
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set staking contract
     (var-set stakingContract address)
     (ok address)
   )
@@ -35,7 +36,7 @@
 
 (define-public (setMult (new uint))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set staking contract
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set staking contract
     (var-set mult new)
     (ok new)
   )
@@ -43,7 +44,7 @@
 
 (define-public (setInterval (inter uint))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the interval
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the interval
     (var-set interval inter)
     (ok inter)
   )
@@ -51,7 +52,7 @@
 
 (define-public (setRate (rate uint))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the return rate
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the return rate
     (var-set returnRate rate)
     (ok rate)
   )
@@ -59,7 +60,7 @@
 
 (define-public (setOwner (address principal))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
     (var-set contract-owner address)
     (ok address)
   )
@@ -118,8 +119,8 @@
 ;; Mainnet `return` function added
 (define-public (return (amount uint))
   (begin
-    (asserts! (is-eq tx-sender (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
-    (try! (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer amount tx-sender (var-get contract-owner) none)))
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
+    (try! (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer amount contract-caller (var-get contract-owner) none)))
     (ok amount)
   )
 )
