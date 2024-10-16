@@ -38,6 +38,7 @@
   (default-to u0 (map-get? nft-listing-counts nft-asset-contract))
 )
 
+;;Using contract-caller for safety S/O Ghislo
 (define-public (set-whitelisted (asset-contract principal) (whitelisted bool))
   (begin
     (asserts! (is-eq (var-get contract-owner) contract-caller) ERR_UNAUTHORISED)
@@ -47,14 +48,14 @@
 
 (define-public (set-owner (newOwner principal))
   (begin
-    (asserts! (is-eq (var-get contract-owner) tx-sender) ERR_UNAUTHORISED)
+    (asserts! (is-eq (var-get contract-owner) contract-caller) ERR_UNAUTHORISED)
     (ok (var-set contract-owner newOwner))
   )
 )
 
 (define-public (set-rate (newRate uint))
   (begin
-    (asserts! (is-eq (var-get contract-owner) tx-sender) ERR_UNAUTHORISED)
+    (asserts! (is-eq (var-get contract-owner) contract-caller) ERR_UNAUTHORISED)
     (ok (var-set returnRate newRate))
   )
 )
