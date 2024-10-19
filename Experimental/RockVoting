@@ -1,0 +1,163 @@
+;; Voting Contract
+
+;; Constants
+(define-constant ERR-PROPOSALS-CLOSED u100)
+(define-constant ERR-VOTING-NOT-OPEN u101)
+(define-constant ERR-VOTING-CLOSED u102)
+(define-constant ERR-PROPOSAL-NOT-FOUND u103)
+(define-constant ERR-ALREADY-VOTED u104)
+(define-constant ERR-NO-LOCKED-TOKENS u105)
+(define-constant ERR-INSUFFICIENT-LOCKED-TOKENS u106)
+
+;; Variables
+(define-data-var deploy-block-height uint block-height)
+(define-data-var total-proposals uint u0)
+(define-data-var most-voted (tuple (id uint) (votes uint)) { id: u0, votes: u0 })
+
+;; Data storage for locked balances
+(define-map locked-balances principal uint)
+(define-map proposals (uint) { proposer: principal, votes: uint, content: (string-ascii 256) })
+
+;; SIP-10 token contract (stacks-rock)
+(define-constant TOKEN-CONTRACT 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock)
+;; NFT contract (hard-as-rock)
+(define-constant NFT-CONTRACT 'SP318K3PRSDM42P68CAK4WS8MB1TRXA1K00TMEF8B.hard-as-rock)
+
+;; Lock tokens for voting
+(define-public (lock-tokens (amount uint))
+    (begin
+        ;; Transfer tokens from the user to the contract
+        (try! (contract-call? TOKEN-CONTRACT ft-transfer? amount tx-sender (as-contract tx-sender)))
+        
+        ;; Update locked balance
+        (let ((current-locked (default-to u0 (map-get? locked-balances tx-sender))))
+            (map-insert locked-balances tx-sender (+ current-locked amount))
+        )
+        (ok (+ current-locked amount))
+    )
+)
+
+;; Unlock tokens after voting
+(define-public (unlock-tokens (amount uint))
+    (begin
+        ;; Check locked balance
+        (let ((locked-balance (map-get? locked-balances tx-sender)))
+            (if (is-none locked-balance)
+                (err ERR-NO-LOCKED-TOKENS)
+                (let ((current-locked (default-to u0 locked-balance)))
+                    (if (< current-locked amount)
+                        (err ERR-INSUFFICIENT-LOCKED-TOKENS)
+                        (begin
+                            ;; Transfer tokens back to the user
+                            (try! (as-contract (contract-call? TOKEN-CONTRACT ft-transfer? amount (as-contract tx-sender) tx-sender)))
+                            ;; Update locked balance
+                            (let ((new-locked (- current-locked amount)))
+                                (if (is-eq new-locked u0)
+                                    (map-delete locked-balances tx-sender)
+                                    (map-insert locked-balances tx-sender new-locked))
+                                (ok new-locked)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
+)
+
+;; Get locked balance for a voter
+(define-read-only (get-locked-balance (voter principal))
+    (default-to u0 (map-get? locked-balances voter))
+)
+
+;; Calculate votes based on locked tokens and NFTs
+(define-read-only (calculate-votes (voter principal))
+    (let (
+        (token-balance (contract-call? TOKEN-CONTRACT get-balance voter))
+        (nft-balance (contract-call? NFT-CONTRACT get-balance voter))
+    )
+        ;; Votes = (token-balance / 69.69m) + NFT balance
+        (+ (/ token-balance u6960000000000) nft-balance)
+    )
+)
+
+;; Submit a proposal (Round 1)
+(define-public (submit-proposal (content (string-ascii 256)))
+    (begin
+        ;; Check that we are within the first 288 blocks
+        (asserts! (<= block-height (+ (var-get deploy-block-height) u288)) (err ERR-PROPOSALS-CLOSED))
+        
+        ;; Get the number of votes the user has
+        (let (
+            (votes (calculate-votes tx-sender))
+            (proposal-id (var-get total-proposals))
+        )
+            ;; Store the proposal with votes and content
+            (map-set proposals proposal-id { proposer: tx-sender, votes: votes, content: content })
+            
+            ;; Increment the total number of proposals
+            (var-set total-proposals (+ proposal-id u1))
+            
+            ;; Compare this proposal to the current top-voted proposal
+            (compare-top proposal-id votes)
+            
+            ;; Return the proposal ID
+            (ok proposal-id)
+        )
+    )
+)
+
+;; Vote on a proposal (Round 2)
+(define-public (vote (proposal-id uint))
+    (begin
+        ;; Check if the voting period is open (288 blocks to 576 blocks)
+        (asserts! (> block-height (+ (var-get deploy-block-height) u288)) (err ERR-VOTING-NOT-OPEN))
+        (asserts! (<= block-height (+ (var-get deploy-block-height) (* u2 u288))) (err ERR-VOTING-CLOSED))
+        
+        ;; Calculate the user's vote weight
+        (let (
+            (votes (calculate-votes tx-sender))
+            (proposal (unwrap! (map-get? proposals proposal-id) (err ERR-PROPOSAL-NOT-FOUND)))
+        )
+            ;; Add the user's votes to the proposal
+            (map-set proposals proposal-id 
+                { proposer: (get proposer proposal), votes: (+ (get votes proposal) votes), content: (get content proposal) })
+            
+            ;; Compare the updated proposal to the current top-voted proposal
+            (compare-top proposal-id (+ (get votes proposal) votes))
+            
+            (ok true)
+        )
+    )
+)
+
+;; Compare the current proposal to the most-voted proposal
+(define-private (compare-top (proposal-id uint) (votes uint))
+    (let ((current-top (var-get most-voted)))
+        (if (> votes (get votes current-top))
+            (var-set most-voted { id: proposal-id, votes: votes })
+            (ok false)
+        )
+    )
+)
+
+;; Read the top-voted proposal
+(define-read-only (get-top-proposal)
+    (ok (var-get most-voted))
+)
+
+;; Read a specific proposal by ID
+(define-read-only (get-proposal (proposal-id uint))
+    (ok (map-get? proposals proposal-id))
+)
+
+;; Get the total number of proposals
+(define-read-only (get-total-proposals)
+    (ok (var-get total-proposals))
+)
+
+;; Read the voting question (constant)
+(define-constant QUESTION "What should the community decide on?")
+(define-read-only (get-question)
+    (ok QUESTION)
+)
