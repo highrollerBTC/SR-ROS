@@ -94,7 +94,7 @@
 (define-public (return (amount uint))
   (begin
     (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
-    (try! (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer amount contract-caller (var-get contract-owner) none)))
+    (try! (as-contract (contract-call? 'SM26NBC8SFHNW4P1Y4DFH27974P56WN86C92HPEHH.token-lqstx transfer amount contract-caller (var-get contract-owner) none)))
     (ok amount)
   )
 )
