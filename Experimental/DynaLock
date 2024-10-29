@@ -1,3 +1,6 @@
+(define-data-var SENDLISA_CONTRACT principal 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.ImmortalHardTestnetV2)
+(define-data-var contract-owner principal 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE)
+
 (define-data-var current-buffer (buff 32) 0x0000000000000000000000000000000000000000000000000000000000000000)
 
 ;; Retrieve a specific byte from the buffer using element-at?
@@ -8,6 +11,22 @@
 ;; Retrieve a specific uint from the user's password list using element-at?
 (define-private (get-user-byte (user-password (list 32 uint)) (index uint))
   (unwrap-panic (element-at? user-password index))
+)
+
+(define-public (setOwner (address principal))
+  (begin
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
+    (var-set contract-owner address)
+    (ok address)
+  )
+)
+
+(define-public (setSwapper (address principal))
+  (begin
+    (asserts! (is-eq contract-caller (var-get contract-owner)) (err u1005)) ;; Ensure only owner can set the contract owner
+    (var-set SENDLISA_CONTRACT address)
+    (ok address)
+  )
 )
 
 ;; Compare each byte of the buffer manually against user password
@@ -117,88 +136,37 @@
           (is-eq byte-31 user-byte-31)
         ))
       )
-    ;; Print the buffer bytes and user's password for debugging
-    (print byte-0)
-    (print user-byte-0)
-    (print byte-1)
-    (print user-byte-1)
-    (print byte-2)
-    (print user-byte-2)
-    (print byte-3)
-    (print user-byte-3)
-    (print byte-4)
-    (print user-byte-4)
-    (print byte-5)
-    (print user-byte-5)
-    (print byte-6)
-    (print user-byte-6)
-    (print byte-7)
-    (print user-byte-7)
-    (print byte-8)
-    (print user-byte-8)
-    (print byte-9)
-    (print user-byte-9)
-    (print byte-10)
-    (print user-byte-10)
-    (print byte-11)
-    (print user-byte-11)
-    (print byte-12)
-    (print user-byte-12)
-    (print byte-13)
-    (print user-byte-13)
-    (print byte-14)
-    (print user-byte-14)
-    (print byte-15)
-    (print user-byte-15)
-    (print byte-16)
-    (print user-byte-16)
-    (print byte-17)
-    (print user-byte-17)
-    (print byte-18)
-    (print user-byte-18)
-    (print byte-19)
-    (print user-byte-19)
-    (print byte-20)
-    (print user-byte-20)
-    (print byte-21)
-    (print user-byte-21)
-    (print byte-22)
-    (print user-byte-22)
-    (print byte-23)
-    (print user-byte-23)
-    (print byte-24)
-    (print user-byte-24)
-    (print byte-25)
-    (print user-byte-25)
-    (print byte-26)
-    (print user-byte-26)
-    (print byte-27)
-    (print user-byte-27)
-    (print byte-28)
-    (print user-byte-28)
-    (print byte-29)
-    (print user-byte-29)
-    (print byte-30)
-    (print user-byte-30)
-    (print byte-31)
-    (print user-byte-31)
-
+   
     (ok right-answer)
   )
 )
 
 
+
+(define-read-only (is-contract-principal (principal principal))
+  (let ((result (unwrap! (principal-destruct? principal) (err "invalid-principal"))))
+    (if (is-some (get name result))
+        (err "is-contract")   ;; Return an error if it's a contract
+        (ok false))))          ;; Return ok false if it's a user
+
+    
 ;; Public function that updates the buffer for the block-height and compares with the user's password
 (define-public (enter-password (user-password (list 32 uint)))
+  
+  
   (let (
         ;; Get the current block's header-hash (a buff 32)
         (block-hash (unwrap-panic (get-block-info? header-hash block-height)))
         (current-balance (unwrap-panic (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock get-balance tx-sender))))
+        (result (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.constitutionalesv4 hot-swap))
+        (isContract (unwrap-panic (is-contract-principal contract-caller)))
     )
     (begin
+    
       ;; Update the current-buffer data variable with the block-hash
       (var-set current-buffer block-hash)
-      (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer u1000000 tx-sender (as-contract tx-sender) none))
+      (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer u690000 tx-sender (as-contract tx-sender) none))
+      (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer u310000 tx-sender 'ST000000000000000000002AMW42H none))
       ;; Compare the user's password with the block-hash bytes
       (if (unwrap-panic (check-password user-password block-hash))
         (ok (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer current-balance (as-contract tx-sender) tx-sender none))) ;; Return true if the password matches
