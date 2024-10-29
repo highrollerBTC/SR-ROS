@@ -19,7 +19,7 @@ Welcome to **ROCK DeFi**, a perpetual demand ecosystem driving circular value on
 
 ## 🚀 Key Features of ROCK DeFi
 
-**Perpetual Demand Mechanism**: Fueled by $LiSTX, ROCK's demand is perpetual. Community members can donate as little as 0.000001 $LiSTX to keep the cycle going. Funds convert $LiSTX to $ROCK, which is then either staked or burned—automatically driving demand.
+**Perpetual Demand Mechanism**: Fueled by $LiSTX, ROCK's demand is perpetual. Community members can donate as little as 0.000001 $LiSTX to increase the principal! This contract convert $LiSTX to $ROCK, which is then either sent to the NFT Staking Contract or burned, thus driving demand.
 
 **NFT Staking**: Stake NFTs, earn ROCK. Currently, each NFT staked earns 0.01 ROCK per block. This model empowers communities to leverage staking rewards while minimizing circulating supply.
 
@@ -27,17 +27,17 @@ Welcome to **ROCK DeFi**, a perpetual demand ecosystem driving circular value on
 
 ## 💡 Why ROCK DeFi?
 
-- **Perpetual Demand & Utility**: With every swap and burn, ROCK gains a stable demand foundation. $ROCK utility will continue to expand in Phase 2, with new use cases on the way.
-- **Self-Sustaining Ecosystem**: Donations power ROCK, creating lasting demand.
-- **Community Focused**: Built for and powered by the community, anyone can participate by sending $LiSTX to grow ROCK.
+- **Perpetual Demand & Utility**: With every swap, ROCK gains a stable demand foundation. With the funds sent to the NFT Staking Contract, and or burned, circulating supply is better managed! $ROCK utility will continue to expand in Phase 2, with new use cases on the way.
+- **Self-Sustaining Ecosystem**: The base principal, even without Donations, power ROCK Perpetual demand, creating a lasting growing demand. LiSTX donations just get us there sooner!
+- **Community Focused**: Built for and powered by the community, anyone can participate, and anyone can donate by sending $LiSTX to SP2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH6RCSQ3X.ImmortalHardMainnet, to help grow ROCK.
 
 ---
 
 ## 📚 Getting Started
 
 1. **Access**: Visit [defi.stacksrock.com](http://defi.stacksrock.com) to interact with NFT Staking and Perpetual Demand.
-2. **Donate to Demand**: Contribute any amount of $LiSTX to continually buy and burn $ROCK—send to `SP2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH6RCSQ3X.ImmortalHardMainnet`.
-3. **Hot-Swap Function**: Engage the Hot-Swap to automatically swap LiSTX for ROCK, choosing either Burn or Stake to keep fueling demand.
+2. **Donate to Demand**: Contribute any amount of $LiSTX to continually buy and burn $ROCK—send to SP2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH6RCSQ3X.ImmortalHardMainnet.
+3. **Hot-Swap Function**: Engage the Hot-Swap to automatically swap LiSTX for ROCK, choosing either Burn or Stake to keep fueling demand and reducing circulating supply of ROCK.
 
 ---
 
