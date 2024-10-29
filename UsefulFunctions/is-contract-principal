@@ -1,0 +1,11 @@
+;;Returns true if it's a contract principal, and false if it's a wallet address.
+
+(define-public (is-contract-principal (principal principal))
+  (match (principal-destruct? principal)
+    ok-data
+    (if (is-some (get name ok-data))
+        (ok false)  ;; It's a contract if the name field is `some`
+        (ok true)) ;; It's a user if the name field is `none`
+    
+    err-data
+    (err err-data))) ;; Return the error if `principal-destruct?` fails
