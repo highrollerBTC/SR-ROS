@@ -1,0 +1,121 @@
+(define-data-var report-counter uint u0)
+
+(define-map reports {id: uint} 
+    (tuple 
+        (content (string-ascii 256)) 
+        (votes uint) 
+        (flags uint) 
+        (archived bool) 
+        (creator principal)
+    )
+)
+
+;; Function to submit a report
+(define-public (submit-report (content (string-ascii 256)))
+    (let ((id (var-get report-counter)))
+        (map-set reports {id: id} 
+            { content: content, votes: u0, flags: u0, archived: false, creator: tx-sender }
+        )
+        (var-set report-counter (+ id u1))
+        (ok id)
+    )
+)
+
+;; Read-only function to retrieve a specific report by ID
+(define-read-only (get-report (id uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (ok (unwrap-panic report))
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Function to upvote a report by a certain amount
+(define-public (upvote-report (id uint) (vote-amount uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (let ((existing-report (unwrap-panic report))
+                  (current-votes (get votes existing-report)))
+                (map-set reports {id: id} 
+                    (merge existing-report { votes: (+ current-votes vote-amount) })
+                )
+                (ok (+ current-votes vote-amount)) ;; Return the new vote count
+            )
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Function to flag a report by a certain amount
+(define-public (flag-report (id uint) (flag-amount uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (let ((existing-report (unwrap-panic report))
+                  (current-flags (get flags existing-report)))
+                (map-set reports {id: id} 
+                    (merge existing-report { flags: (+ current-flags flag-amount) })
+                )
+                (ok (+ current-flags flag-amount)) ;; Return the new flag count
+            )
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Additional Read-Only Functions
+
+;; Get the Report Creator
+(define-read-only (get-report-creator (id uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (ok (get creator (unwrap-panic report)))
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Get the Report Content
+(define-read-only (get-report-content (id uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (ok (get content (unwrap-panic report)))
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Get Report Votes
+(define-read-only (get-report-votes (id uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (ok (get votes (unwrap-panic report)))
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Get Report Flags
+(define-read-only (get-report-flags (id uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (ok (get flags (unwrap-panic report)))
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Check if Report is Archived
+(define-read-only (is-report-archived (id uint))
+    (let ((report (map-get? reports {id: id})))
+        (if (is-some report)
+            (ok (get archived (unwrap-panic report)))
+            (err u404) ;; Error code for "Report not found"
+        )
+    )
+)
+
+;; Get Total Number of Reports
+(define-read-only (get-total-reports)
+    (ok (var-get report-counter))
+)
