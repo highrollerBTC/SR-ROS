@@ -1,3 +1,5 @@
+;;This contract uses the Ulra-Random contract to pick ultra random numbers, checks if they're prime, and stores the results for later.
+
 (define-constant two u2)
 (define-constant three u3)
 (define-constant six u6)
