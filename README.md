@@ -21,6 +21,9 @@ Welcome to **ROCK DeFi**, a perpetual demand ecosystem driving circular value on
 
 **Perpetual Demand Mechanism**: Fueled by $LiSTX, ROCK's demand is perpetual. Community members can donate as little as 0.000001 $LiSTX to increase the principal! This contract convert $LiSTX to $ROCK, which is then either sent to the NFT Staking Contract or burned, thus driving demand.
 
+You can see the video here on how to send LiSTX to the contract, along with how it works!
+https://www.youtube.com/watch?v=VzqFfJNLuhg
+
 **NFT Staking**: Stake NFTs, earn ROCK. Currently, each NFT staked earns 0.01 ROCK per block. This model empowers communities to leverage staking rewards while minimizing circulating supply.
 
 ---
@@ -40,10 +43,16 @@ Welcome to **ROCK DeFi**, a perpetual demand ecosystem driving circular value on
 3. **Hot-Swap Function**: Engage the Hot-Swap to automatically swap LiSTX for ROCK, choosing either Burn or Stake to keep fueling demand and reducing circulating supply of ROCK.
 
 ---
+You can see the video here on how to send LiSTX to the contract, along with how it works!
+
+[![Perpetual Demand on Stacks](https://img.youtube.com/vi/VzqFfJNLuhg/0.jpg)](https://www.youtube.com/watch?v=VzqFfJNLuhg)
+
+https://www.youtube.com/watch?v=VzqFfJNLuhg
+
 
 ## 💌 Support ROCK DeFi
 
-Help sustain the demand-driven ecosystem by donating to [Highroller.btc](https://explorer.hiro.so/address/SP22KATK6MJF40987KB2KSZQ6E027HQ0CPP73C9Y?chain=mainnet). Your support fuels the next phase of ROCK DeFi, bringing even more utility to $ROCK.
+Help sustain the development by donating to [Highroller.btc](https://explorer.hiro.so/address/SP22KATK6MJF40987KB2KSZQ6E027HQ0CPP73C9Y?chain=mainnet). Your support fuels the next phase of ROCK DeFi, bringing even more utility to $ROCK.
 
 Huge thanks to [@moonlabs_btc](https://twitter.com/moonlabs_btc) and [@Ghislo749_](https://twitter.com/Ghislo749_) for the outstanding frontend!
 
