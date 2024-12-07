@@ -1,67 +1,66 @@
-;; Use the necessary traits for mainnet addresses
-(use-trait ft-trait 'SP2AKWJYC7BNY18W1XXKPGP0YVEK63QJG4793Z2D4.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait v-ft-trait 'SP2AKWJYC7BNY18W1XXKPGP0YVEK63QJG4793Z2D4.sip-010-trait-ft-standard.sip-010-trait)
-(use-trait v-share-fee-to-trait 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.univ2-share-fee-to-trait.share-fee-to-trait)
-(use-trait a-ft-trait 'SP102V8P0F7JX67ARQ77WEA3D3CFB5XW39REDT0AM.trait-sip-010.sip-010-trait)
+;; Testnet configuration
+(use-trait v-ft-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.sip-010-trait-ft-standard.sip-010-trait)
+(use-trait v-share-fee-to-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.univ2-share-fee-to-trait.share-fee-to-trait)
+(use-trait a-ft-trait 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.sip-010-trait-ft-standard.sip-010-trait)
 
+;; Define constants for testnet contracts and addresses
+(define-constant ROUTER_CONTRACT 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.rsavNew)
+(define-constant NFT_CONTRACT 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.Your-NFT-Name)
+(define-constant TOKEN_A 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+(define-constant TOKEN_B 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
+(define-constant SHARE_FEE_TO 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)
 
-(use-trait share-fee-to-trait 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.univ2-share-fee-to-trait.share-fee-to-trait)
-(impl-trait 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9.nft-trait.nft-trait)
+;; Define constants for error codes
+(define-constant ERR_SWAP_FAILED (err u1001))
+(define-constant ERR_MINIMUM_NOT_MET (err u1002))
+(define-constant ERR_CLAIM_FAILED (err u1003))
+(define-constant ERR_INVALID_PARAMETERS (err u1004))
 
-;; Define constants for contracts and addresses
-(define-constant BURN_ADDRESS 'SP000000000000000000002Q6VF78)
-(define-constant UNIV2_ROUTER 'SP1Y5YSTAHZ88XYK1VPDH24GY0HPX5J4JECTMY4A1.univ2-router)
-(define-constant NFT_CONTRACT 'SP318K3PRSDM42P68CAK4WS8MB1TRXA1K00TMEF8B.hard-as-rock)
-(define-constant STAKING_CONTRACT 'SP22KATK6MJF40987KB2KSZQ6E027HQ0CPP73C9Y.StakeForRock)
-
-;; Define a constant for error code
-(define-constant ERR_SWAP_FAILED (err u1003))
-
-;; Define a data variable for the last swap height
-(define-data-var last-swap-height uint u0)
-
-;; The hot-swap function for mainnet
-(define-public (hot-swap
-    (id uint)                          ;; Pool ID as a parameter
-    (token0 <v-ft-trait>)                ;; Token0 contract implementing ft-trait
-    (token1 <v-ft-trait>)                ;; Token1 contract implementing ft-trait
-    (token-in <a-ft-trait>)              ;; Input token for the swap
-    (token-out <a-ft-trait>)             ;; Output token for the swap
-    (share-fee-to <share-fee-to-trait>) 
-    (amt-in uint)
-    (amt-out-min uint)                 ;; Minimum amount to receive
+;; Public function to swap tokens and claim an NFT
+(define-public (swap-and-claim
+    (amount-to-send uint)               ;; Amount of TOKEN_A to swap
+    (min-amount-token-b uint)           ;; Minimum acceptable amount of TOKEN_B 
 )
-  (let (
-    ;; Call the swap-exact-tokens-for-tokens function in the univ2-router contract
-    (swap-result (contract-call? 
-                   UNIV2_ROUTER 
-                   swap-exact-tokens-for-tokens
-                   id                              ;; Pool ID passed as a parameter
-                   token0                          ;; Token0 passed as a parameter
-                   token1                          ;; Token1 passed as a parameter
-                   token-in                        ;; Token-in passed as a parameter
-                   token-out                       ;; Token-out passed as a parameter
-                   share-fee-to                    ;; Fee recipient implementing share-fee-to-trait
-                   amt-in                          ;; Amount to swap
-                   amt-out-min)))                  ;; Minimum amount to receive passed as a parameter
-    ;; Handle swap result
-    (match swap-result
-      ok
-        ;; If successful, proceed to call claim on the NFT contract
-        (try! (contract-call? NFT_CONTRACT claim))
-      err
-        ;; If swap failed, return the error
-        swap-result
+  (begin
+    ;; Validate input parameters
+    (if (or (<= amount-to-send u0) (<= min-amount-token-b u0))
+        ERR_INVALID_PARAMETERS
+        (begin
+          ;; Perform the swap using swap-helper-a
+          (let (
+            (swap-result (contract-call? 
+                           ROUTER_CONTRACT
+                           swap
+                           amount-to-send                  ;; Amount of TOKEN_A to send
+                           u69000000                       ;; Fixed value (slippage or other parameter)
+                           true                            ;; Boolean flag
+                           (tuple (a TOKEN_A) (b TOKEN_B)) ;; Token pair
+                           SHARE_FEE_TO                    ;; Share fee recipient
+                           (tuple (a 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock) 
+                                  (b 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock)) ;; Internal token pair
+                           (tuple (a u5000000))            ;; A-factors tuple
+                         ))
+          )
+            (if (is-err swap-result)
+                ERR_SWAP_FAILED
+                (let ((swap-output (unwrap! swap-result ERR_SWAP_FAILED)))
+                  ;; Check if minimum acceptable amount of TOKEN_B is met
+                  (if (< swap-output min-amount-token-b)
+                      ERR_MINIMUM_NOT_MET
+                      (let (
+                        ;; Attempt to mint the NFT
+                        (claim-result (contract-call? NFT_CONTRACT mint 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE))
+                      )
+                        (if (is-err claim-result)
+                            ERR_CLAIM_FAILED
+                            (ok true)
+                        )
+                      )
+                  )
+                )
+            )
+          )
+        )
     )
   )
-)
-
-;; Function to stake tokens
-(define-public (toStake (amount uint))
-  (contract-call? 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock transfer amount (as-contract tx-sender) STAKING_CONTRACT none)
-)
-
-;; Function to burn tokens
-(define-public (burn (amount uint))
-  (contract-call? 'SP4M2C88EE8RQZPYTC4PZ88CE16YGP825EYF6KBQ.stacks-rock transfer amount (as-contract tx-sender) BURN_ADDRESS none)
 )
