@@ -1,23 +1,108 @@
 (define-data-var report-counter uint u0)
+(define-data-var fee uint u1000000)
 
 (define-map reports {id: uint} 
     (tuple 
         (content (string-ascii 256)) 
         (votes uint) 
         (flags uint) 
-        (archived bool) 
+        (archived uint) 
         (creator principal)
     )
 )
 
-;; Function to submit a report
+;; Define fees
+(define-constant submit-fee u1000) ;; 1000 microROCK (0.001 ROCK)
+(define-constant vote-fee u50)     ;; 50 microROCK per vote
+(define-constant flag-fee u50)     ;; 50 microROCK per flag
+
+;; Define contract owner
+(define-constant contract-owner 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE)
+
+;; Function to submit a report with a fee
 (define-public (submit-report (content (string-ascii 256)))
-    (let ((id (var-get report-counter)))
-        (map-set reports {id: id} 
-            { content: content, votes: u0, flags: u0, archived: false, creator: tx-sender }
+    (begin
+        ;; Require payment
+        (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer (var-get fee) tx-sender (as-contract tx-sender) none))
+
+        ;; Create the report
+        (let ((id (var-get report-counter)))
+            (map-set reports {id: id} 
+                { content: content, votes: u0, flags: u0, archived: u0, creator: tx-sender }
+            )
+            (var-set report-counter (+ id u1))
+            (ok id)
         )
-        (var-set report-counter (+ id u1))
-        (ok id)
+    )
+)
+
+;; Function to upvote a report with a fee
+(define-public (upvote-report (id uint) (vote-amount uint))
+    (begin
+        ;; Calculate total voting fee
+            ;; Require payment
+            (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer vote-amount tx-sender (as-contract tx-sender) none))
+
+            ;; Update votes
+            (let ((report (map-get? reports {id: id})))
+                (if (is-some report)
+                    (let ((existing-report (unwrap-panic report))
+                          (current-votes (get votes existing-report)))
+                        (map-set reports {id: id} 
+                            (merge existing-report { votes: (+ current-votes vote-amount) })
+                        )
+                        (ok (+ current-votes vote-amount)) ;; Return the new vote count
+                    )
+                    (err u404) ;; Error code for "Report not found"
+                )
+            )
+
+    )
+)
+
+;; Function to flag a report with a fee
+(define-public (flag-report (id uint) (flag-amount uint))
+    (begin
+        ;; Calculate total flagging fee
+        
+            ;; Require payment
+            (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer flag-amount tx-sender (as-contract tx-sender) none))
+    
+            ;; Update flags
+            (let ((report (map-get? reports {id: id})))
+                (if (is-some report)
+                    (let ((existing-report (unwrap-panic report))
+                          (current-flags (get flags existing-report)))
+                        (map-set reports {id: id} 
+                            (merge existing-report { flags: (+ current-flags flag-amount) })
+                        )
+                        (ok (+ current-flags flag-amount)) ;; Return the new flag count
+                    )
+                    (err u404) ;; Error code for "Report not found"
+                )
+            )
+    )
+)
+
+(define-public (archive-report (id uint) (arch-amount uint))
+    (begin
+        ;; Calculate total flagging fee
+            ;; Require payment
+            (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer arch-amount tx-sender (as-contract tx-sender) none))
+    
+            ;; Update flags
+            (let ((report (map-get? reports {id: id})))
+                (if (is-some report)
+                    (let ((existing-report (unwrap-panic report))
+                          (current-archs (get archived existing-report)))
+                        (map-set reports {id: id} 
+                            (merge existing-report { flags: (+ current-archs arch-amount) })
+                        )
+                        (ok (+ current-archs arch-amount)) ;; Return the new flag count
+                    )
+                    (err u404) ;; Error code for "Report not found"
+                )
+            )
     )
 )
 
@@ -31,34 +116,16 @@
     )
 )
 
-;; Function to upvote a report by a certain amount
-(define-public (upvote-report (id uint) (vote-amount uint))
-    (let ((report (map-get? reports {id: id})))
-        (if (is-some report)
-            (let ((existing-report (unwrap-panic report))
-                  (current-votes (get votes existing-report)))
-                (map-set reports {id: id} 
-                    (merge existing-report { votes: (+ current-votes vote-amount) })
-                )
-                (ok (+ current-votes vote-amount)) ;; Return the new vote count
+;; Function to update the fee (owner only)
+(define-public (set-fee (new-fee uint))
+    (begin
+        ;; Check if the caller is the contract owner
+        (if (is-eq tx-sender contract-owner)
+            (begin
+                (var-set fee new-fee)
+                (ok true)
             )
-            (err u404) ;; Error code for "Report not found"
-        )
-    )
-)
-
-;; Function to flag a report by a certain amount
-(define-public (flag-report (id uint) (flag-amount uint))
-    (let ((report (map-get? reports {id: id})))
-        (if (is-some report)
-            (let ((existing-report (unwrap-panic report))
-                  (current-flags (get flags existing-report)))
-                (map-set reports {id: id} 
-                    (merge existing-report { flags: (+ current-flags flag-amount) })
-                )
-                (ok (+ current-flags flag-amount)) ;; Return the new flag count
-            )
-            (err u404) ;; Error code for "Report not found"
+            (err u403) ;; Error code for "Unauthorized"
         )
     )
 )
