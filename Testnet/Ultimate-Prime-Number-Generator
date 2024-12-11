@@ -28,6 +28,14 @@
 (define-data-var last-check-value uint u5)     
 (define-data-var is-check-active bool false)    
 
+(define-map user-data
+  principal
+  (list 1000 uint)) ;; The list can contain up to 10 uints.
+
+;; Indexed Non-Prime Map using tuple format
+(define-map indexedNonPrime { index: uint } { nonPrime: uint })
+(define-data-var non-prime-index uint u0)
+
 ;; Prime/Not Prime Maps using tuple format
 (define-map isPrime { number: uint } { confirmed: bool })
 (define-map isNotPrime { number: uint } { confirmed: bool })
@@ -199,29 +207,44 @@
   )
 )
 
-;; Main function: incremental prime check
+;; Incremental prime-check logic (updated to handle indexedNonPrime)
 (define-private (incremental-is-prime)
   (begin
     (asserts! (var-get is-check-active) (err u402))
-    
+
     (let (
       (n (var-get current-prime))
       (i (var-get last-check-value))
     )
       (begin
+        ;; Debug: Print current number being checked
+        (print { step: "Start Incremental Check", current-prime: n, divisor: i })
+
         ;; 1. Check small primes
-        (let ((small-prime-result (unwrap-panic (check-small-primes n))))
+        (let ((small-prime-result (unwrap-panic (check-small-primes n)))
+        (maker tx-sender))
           (if (is-eq small-prime-result true)
               (begin
+                (print { step: "Step 1", result: "Small Prime Confirmed", number: n })
                 (map-set isPrime { number: n } { confirmed: true })
+                (let ((current-index (var-get prime-index)))
+                  (map-set indexedPrime { index: current-index } { prime: n })
+                  (var-set prime-index (+ current-index u1))
+                )
                 (var-set is-check-active false)
+                (try! (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer u1000000 tx-sender maker none)))
                 (ok true)
               )
               ;; 2. Check divisibility by 2 or 3
               (let ((divisibility-result (unwrap-panic (check-divisibility-by-2-or-3 n))))
                 (if (is-eq divisibility-result false)
                     (begin
+                      (print { step: "Step 2", result: "Not Prime", reason: "Divisible by 2 or 3", number: n })
                       (map-set isNotPrime { number: n } { confirmed: false })
+                      (let ((current-index (var-get non-prime-index)))
+                        (map-set indexedNonPrime { index: current-index } { nonPrime: n })
+                        (var-set non-prime-index (+ current-index u1))
+                      )
                       (var-set is-check-active false)
                       (ok false)
                     )
@@ -229,16 +252,21 @@
                     (let ((i-squared-result (unwrap-panic (check-i-squared i n))))
                       (if (is-eq i-squared-result true)
                           (begin
+                            (print { step: "Step 3", result: "Prime Confirmed", number: n, index: (var-get prime-index) })
                             (map-set isPrime { number: n } { confirmed: true })
                             (let ((current-index (var-get prime-index)))
                               (map-set indexedPrime { index: current-index } { prime: n })
                               (var-set prime-index (+ current-index u1))
                             )
                             (var-set is-check-active false)
+                            (try! (as-contract (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer u1000000 tx-sender maker none)))
                             (ok true)
                           )
                           ;; 4. Increment i by 6 for the next iteration
-                          (ok (var-set last-check-value (+ i six)))
+                          (begin
+                            (print { step: "Step 4", action: "Increment Divisor", next-divisor: (+ i six) })
+                            (ok (var-set last-check-value (+ i six)))
+                          )
                       )
                     )
                 )
@@ -249,6 +277,13 @@
     )
   )
 )
+
+;; Add a read-only function to retrieve a non-prime by index
+(define-read-only (get-non-prime-by-index (index uint))
+  (map-get? indexedNonPrime { index: index })
+)
+
+
 
 (define-public (reset-prime-check)
   (begin
@@ -268,14 +303,21 @@
   })
 )
 
+
 (define-public (churn)
   (if (var-get is-check-active)
       (begin
-        (unwrap! (incremental-is-prime) (err u500)) ;; Custom error if prime check fails
+        (print (var-get current-prime))
+        (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer u1 tx-sender (as-contract tx-sender) none))
+        (unwrap-panic (incremental-is-prime) ) ;; Custom error if prime check fails
+        
         (ok true)
       )
       (begin
-        (unwrap! (start-prime-check) (err u500)) ;; Custom error if prime check start fails
+        (print (var-get current-prime))
+        (try! (contract-call? 'ST2J9NG5A4F2C0NP0NSSEKM27J2G7CKWXH4KPBFXE.stacks-rock transfer u1 tx-sender (as-contract tx-sender) none))
+        (unwrap-panic (start-prime-check) ) ;; Custom error if prime check start fails
+        
         (ok true)
       )
   )
