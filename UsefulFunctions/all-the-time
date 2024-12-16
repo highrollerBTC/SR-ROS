@@ -1,0 +1,30 @@
+(define-constant SECONDS_PER_DAY u86400) ;; Seconds in a day
+(define-constant TEN_DAYS (* SECONDS_PER_DAY u10)) ;; Seconds in 10 days
+
+(define-read-only (get-current-block-height)
+    ;; Return current block height
+    block-height)
+
+(define-read-only (has-block-height-passed (reference-height uint) (blocks-to-pass uint))
+    ;; Check if height passed
+    (>= block-height (+ reference-height blocks-to-pass)))
+
+(define-read-only (convert-blocks-to-days (num-blocks uint))
+    ;; Convert blocks to days
+    (/ num-blocks u144))
+
+(define-read-only (get-block-timestamp)
+    ;; Get block timestamp or none
+    (get-block-info? time block-height))
+
+
+
+(define-public (are-dates-10-days-apart (block1 uint) (block2 uint))
+    ;; Check if second date is 10 days after the first
+    (let ((timestamp1 (get-block-info? time block1))
+          (timestamp2 (get-block-info? time block2)))
+        (if (and (is-some timestamp1) (is-some timestamp2))
+            (let ((time1 (unwrap-panic timestamp1))
+                  (time2 (unwrap-panic timestamp2)))
+                (ok (> (- time2 time1) TEN_DAYS)))
+            (err "One or both blocks invalid"))))
