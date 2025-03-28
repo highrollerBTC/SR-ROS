@@ -1,4 +1,4 @@
-;;Returns true if it's a contract principal, and false if it's a wallet address.
+;;Returns false if it's a contract principal, and true if it's a wallet address.
 
 (define-public (is-contract-principal (principal principal))
   (match (principal-destruct? principal)
